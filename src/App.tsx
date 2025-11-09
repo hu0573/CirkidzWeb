@@ -1,35 +1,42 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useMemo, useState } from 'react';
+import AdminLayout from './layouts/AdminLayout';
+import Dashboard from './pages/Dashboard';
+import FreeTrials from './pages/FreeTrials';
+import Enrolments from './pages/Enrolments';
+import ClassScheduling from './pages/ClassScheduling';
+import ToastProvider from './components/ToastProvider';
+
+export type PageKey =
+  | 'dashboard'
+  | 'freeTrials'
+  | 'enrolments'
+  | 'classScheduling';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [activePage, setActivePage] = useState<PageKey>('dashboard');
+
+  const pageContent = useMemo(() => {
+    switch (activePage) {
+      case 'dashboard':
+        return <Dashboard />;
+      case 'freeTrials':
+        return <FreeTrials />;
+      case 'enrolments':
+        return <Enrolments />;
+      case 'classScheduling':
+        return <ClassScheduling />;
+      default:
+        return null;
+    }
+  }, [activePage]);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <ToastProvider>
+      <AdminLayout activePage={activePage} onNavigate={setActivePage}>
+        {pageContent}
+      </AdminLayout>
+    </ToastProvider>
+  );
 }
 
-export default App
+export default App;
