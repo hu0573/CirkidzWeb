@@ -10,12 +10,18 @@ type AdminLayoutProps = {
 const NAV_ITEMS: { key: PageKey; label: string; description: string }[] = [
   { key: 'dashboard', label: 'Dashboard', description: 'Overview' },
   { key: 'freeTrials', label: 'Free Trials', description: 'Lead intake' },
+  {
+    key: 'trialScheduling',
+    label: 'Trial Scheduling',
+    description: 'Bookings & follow-up',
+  },
   { key: 'enrolments', label: 'Enrolments', description: 'Active students' },
   {
     key: 'classScheduling',
     label: 'Class Scheduling',
     description: 'Weekly roster',
   },
+  { key: 'internships', label: 'Internships', description: 'Placements' },
 ];
 
 function AdminLayout({ activePage, onNavigate, children }: AdminLayoutProps) {

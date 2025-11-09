@@ -5,12 +5,17 @@ import FreeTrials from './pages/FreeTrials';
 import Enrolments from './pages/Enrolments';
 import ClassScheduling from './pages/ClassScheduling';
 import ToastProvider from './components/ToastProvider';
+import TrialScheduling from './pages/TrialScheduling';
+import Internships from './pages/Internships';
+import { DemoDataProvider } from './hooks/useDemoData';
 
 export type PageKey =
   | 'dashboard'
   | 'freeTrials'
+  | 'trialScheduling'
   | 'enrolments'
-  | 'classScheduling';
+  | 'classScheduling'
+  | 'internships';
 
 function App() {
   const [activePage, setActivePage] = useState<PageKey>('dashboard');
@@ -21,10 +26,14 @@ function App() {
         return <Dashboard />;
       case 'freeTrials':
         return <FreeTrials />;
+      case 'trialScheduling':
+        return <TrialScheduling />;
       case 'enrolments':
         return <Enrolments />;
       case 'classScheduling':
         return <ClassScheduling />;
+      case 'internships':
+        return <Internships />;
       default:
         return null;
     }
@@ -32,9 +41,11 @@ function App() {
 
   return (
     <ToastProvider>
-      <AdminLayout activePage={activePage} onNavigate={setActivePage}>
-        {pageContent}
-      </AdminLayout>
+      <DemoDataProvider>
+        <AdminLayout activePage={activePage} onNavigate={setActivePage}>
+          {pageContent}
+        </AdminLayout>
+      </DemoDataProvider>
     </ToastProvider>
   );
 }

@@ -1,8 +1,11 @@
 import { useMemo, useState } from 'react';
 import EntityDrawer from '../components/EntityDrawer';
 import StatusBadge from '../components/StatusBadge';
-import { freeTrialLeads, type FreeTrialLead } from '../data/freeTrials';
+import { type FreeTrialLead } from '../data/freeTrials';
+import AssignmentModal from '../components/AssignmentModal';
+import { useDemoData } from '../hooks/useDemoData';
 import useToast from '../hooks/useToast';
+import type { TrialBooking } from '../data/trialScheduling';
 
 const statusOptions: FreeTrialLead['status'][] = [
   'New',
@@ -14,33 +17,120 @@ const statusOptions: FreeTrialLead['status'][] = [
 
 type LeadForm = Omit<FreeTrialLead, 'id' | 'notes'> & { notes?: string };
 
-const initialForm: LeadForm = {
+const coachOptions = [
+  'Jordan Hale',
+  'Priya Singh',
+  'Amelia Woods',
+  'Sam Collins',
+  'Oliver Grant',
+] as const;
+
+const locationOptions = [
+  'Cirkidz HQ · Main Hall',
+  'Cirkidz HQ · Practice Room',
+  'Aerial Studio',
+  'Conditioning Studio',
+] as const;
+
+const getInitialForm = (): LeadForm => ({
   student: '',
   contact: '',
   preferredClass: '',
   status: 'New',
   owner: '',
   createdAt: new Date().toISOString().slice(0, 10),
+});
+
+type ScheduleForm = {
+  scheduledAt: string;
+  coach: string;
+  location: string;
+  notes: string;
 };
+
+const getInitialScheduleForm = (lead?: FreeTrialLead): ScheduleForm => ({
+  scheduledAt: '',
+  coach: lead?.owner ?? coachOptions[0],
+  location: locationOptions[0],
+  notes: lead?.notes ?? '',
+});
 
 function FreeTrials() {
   const { addToast } = useToast();
-  const [leads, setLeads] = useState<FreeTrialLead[]>(freeTrialLeads);
+  const { freeTrialLeads, setFreeTrialLeads, setTrialBookings } = useDemoData();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [selectedLead, setSelectedLead] = useState<FreeTrialLead | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [form, setForm] = useState<LeadForm>(initialForm);
+  const [form, setForm] = useState<LeadForm>(getInitialForm());
+  const [scheduleTarget, setScheduleTarget] = useState<FreeTrialLead | null>(null);
+  const [scheduleForm, setScheduleForm] = useState<ScheduleForm>(getInitialScheduleForm());
 
   const filteredLeads = useMemo(() => {
-    return leads.filter((lead) => {
+    return freeTrialLeads.filter((lead) => {
       const matchesStatus =
         statusFilter === 'All' ? true : lead.status === statusFilter;
       const haystack = `${lead.student}${lead.contact}${lead.preferredClass}${lead.owner}`.toLowerCase();
       const matchesSearch = haystack.includes(search.toLowerCase());
       return matchesStatus && matchesSearch;
     });
-  }, [leads, search, statusFilter]);
+  }, [freeTrialLeads, search, statusFilter]);
+
+  const resetSchedule = () => {
+    setScheduleTarget(null);
+    setScheduleForm(getInitialScheduleForm());
+  };
+
+  const handleScheduleSubmit = () => {
+    if (!scheduleTarget) return;
+    if (!scheduleForm.scheduledAt) {
+      addToast({ type: 'error', message: 'Please select a trial time.' });
+      return;
+    }
+
+    const scheduledDate = new Date(scheduleForm.scheduledAt);
+    if (Number.isNaN(scheduledDate.getTime())) {
+      addToast({ type: 'error', message: 'Please enter a valid time.' });
+      return;
+    }
+
+    const weekOf = (() => {
+      const monday = new Date(scheduledDate);
+      const day = monday.getDay(); // 0 Sunday ... 6 Saturday
+      const diff = monday.getDate() - day + (day === 0 ? -6 : 1);
+      monday.setDate(diff);
+      monday.setHours(0, 0, 0, 0);
+      return monday.toISOString().slice(0, 10);
+    })();
+
+    const booking: TrialBooking = {
+      id: `tb-${Date.now()}`,
+      leadId: scheduleTarget.id,
+      student: scheduleTarget.student,
+      contact: scheduleTarget.contact,
+      preferredClass: scheduleTarget.preferredClass,
+      owner: scheduleTarget.owner,
+      coach: scheduleForm.coach,
+      location: scheduleForm.location,
+      scheduledAt: scheduleForm.scheduledAt,
+      weekOf,
+      status: 'Scheduled',
+      notes: scheduleForm.notes || 'Booked via Free Trials intake.',
+    };
+
+    setTrialBookings((prev) => [booking, ...prev]);
+    setFreeTrialLeads((prev) =>
+      prev.map((lead) =>
+        lead.id === scheduleTarget.id ? { ...lead, status: 'Trial Scheduled' } : lead
+      )
+    );
+
+    addToast({
+      type: 'success',
+      message: `${scheduleTarget.student} trial booked.`,
+    });
+    resetSchedule();
+  };
 
   const handleSubmit = () => {
     if (!form.student || !form.contact || !form.preferredClass) {
@@ -52,14 +142,14 @@ function FreeTrials() {
       notes: form.notes ?? 'New lead added via quick intake.',
       ...form,
     };
-    setLeads((prev) => [newLead, ...prev]);
+    setFreeTrialLeads((prev) => [newLead, ...prev]);
     setIsModalOpen(false);
-    setForm(initialForm);
+    setForm(getInitialForm());
     addToast({ type: 'success', message: 'Lead created.' });
   };
 
   const handleConvert = (lead: FreeTrialLead) => {
-    setLeads((prev) =>
+    setFreeTrialLeads((prev) =>
       prev.map((item) =>
         item.id === lead.id ? { ...item, status: 'Converted' } : item
       )
@@ -155,6 +245,16 @@ function FreeTrials() {
                       className="rounded-md border border-slate-200 px-2 py-1 text-slate-600 hover:bg-slate-100"
                     >
                       View
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setScheduleTarget(lead);
+                        setScheduleForm(getInitialScheduleForm(lead));
+                      }}
+                      className="rounded-md border border-indigo-200 px-2 py-1 text-indigo-700 hover:bg-indigo-50"
+                    >
+                      Schedule Trial
                     </button>
                     <button
                       type="button"
@@ -290,6 +390,71 @@ function FreeTrials() {
           </div>
         </div>
       ) : null}
+
+      <AssignmentModal
+        open={Boolean(scheduleTarget)}
+        title="Schedule Trial"
+        description={
+          scheduleTarget
+            ? `${scheduleTarget.student} · ${scheduleTarget.preferredClass}`
+            : undefined
+        }
+        confirmLabel="Save booking"
+        onClose={resetSchedule}
+        onConfirm={handleScheduleSubmit}
+        fields={[
+          {
+            id: 'scheduledAt',
+            label: 'Scheduled time',
+            type: 'datetime-local',
+            value: scheduleForm.scheduledAt,
+            onChange: (value) =>
+              setScheduleForm((prev) => ({
+                ...prev,
+                scheduledAt: value,
+              })),
+          },
+          {
+            id: 'coach',
+            label: 'Coach',
+            type: 'select',
+            value: scheduleForm.coach,
+            options: coachOptions.map((coach) => ({ value: coach, label: coach })),
+            onChange: (value) =>
+              setScheduleForm((prev) => ({
+                ...prev,
+                coach: value,
+              })),
+          },
+          {
+            id: 'location',
+            label: 'Location',
+            type: 'select',
+            value: scheduleForm.location,
+            options: locationOptions.map((location) => ({
+              value: location,
+              label: location,
+            })),
+            onChange: (value) =>
+              setScheduleForm((prev) => ({
+                ...prev,
+                location: value,
+              })),
+          },
+          {
+            id: 'notes',
+            label: 'Notes',
+            type: 'textarea',
+            value: scheduleForm.notes,
+            placeholder: 'Optional: special requests or preparation notes',
+            onChange: (value) =>
+              setScheduleForm((prev) => ({
+                ...prev,
+                notes: value,
+              })),
+          },
+        ]}
+      />
     </div>
   );
 }
