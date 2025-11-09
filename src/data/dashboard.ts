@@ -33,23 +33,23 @@ export const latestFollowUps = [
   {
     id: 'lead-1',
     student: 'Mia Jenkins',
-    status: 'Trial Scheduled',
-    owner: 'Evelyn',
-    due: 'Call after 10 Nov session',
+    status: 'Pending Call',
+    owner: 'Evelyn Walker',
+    due: 'Dial parent after 11 Nov trial',
   },
   {
     id: 'lead-2',
     student: 'Henry Chalmers',
-    status: 'New',
-    owner: 'Sam',
-    due: 'Respond to website enquiry',
+    status: 'Attempted',
+    owner: 'Sam Collins',
+    due: 'Follow up voicemail before Friday',
   },
   {
     id: 'lead-3',
     student: 'Lena Wu',
-    status: 'Contacted',
-    owner: 'Oliver',
-    due: 'Confirm availability Wed',
+    status: 'In Follow-up',
+    owner: 'Oliver Grant',
+    due: 'Offer Thursday aerial slot',
   },
 ] as const;
 

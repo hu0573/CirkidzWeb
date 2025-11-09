@@ -16,12 +16,21 @@ import {
   internshipPlacements as internshipSeed,
   type InternshipPlacement,
 } from '../data/internships';
+import {
+  salesFollowUps as salesFollowUpSeed,
+  type SalesFollowUp,
+} from '../data/salesFollowUps';
+import { enrolments as enrolmentSeed, type Enrolment } from '../data/enrolments';
 
 type DemoDataContextValue = {
   freeTrialLeads: FreeTrialLead[];
   setFreeTrialLeads: Dispatch<SetStateAction<FreeTrialLead[]>>;
   trialBookings: TrialBooking[];
   setTrialBookings: Dispatch<SetStateAction<TrialBooking[]>>;
+  salesFollowUps: SalesFollowUp[];
+  setSalesFollowUps: Dispatch<SetStateAction<SalesFollowUp[]>>;
+  enrolments: Enrolment[];
+  setEnrolments: Dispatch<SetStateAction<Enrolment[]>>;
   internshipPlacements: InternshipPlacement[];
   setInternshipPlacements: Dispatch<SetStateAction<InternshipPlacement[]>>;
 };
@@ -35,6 +44,9 @@ type DemoDataProviderProps = {
 function DemoDataProvider({ children }: DemoDataProviderProps) {
   const [freeTrialLeads, setFreeTrialLeads] = useState<FreeTrialLead[]>(freeTrialLeadSeed);
   const [trialBookings, setTrialBookings] = useState<TrialBooking[]>(trialBookingSeed);
+  const [salesFollowUps, setSalesFollowUps] =
+    useState<SalesFollowUp[]>(salesFollowUpSeed);
+  const [enrolments, setEnrolments] = useState<Enrolment[]>(enrolmentSeed);
   const [internshipPlacements, setInternshipPlacements] =
     useState<InternshipPlacement[]>(internshipSeed);
 
@@ -44,10 +56,14 @@ function DemoDataProvider({ children }: DemoDataProviderProps) {
       setFreeTrialLeads,
       trialBookings,
       setTrialBookings,
+      salesFollowUps,
+      setSalesFollowUps,
+      enrolments,
+      setEnrolments,
       internshipPlacements,
       setInternshipPlacements,
     }),
-    [freeTrialLeads, trialBookings, internshipPlacements]
+    [freeTrialLeads, trialBookings, salesFollowUps, enrolments, internshipPlacements]
   );
 
   return <DemoDataContext.Provider value={value}>{children}</DemoDataContext.Provider>;

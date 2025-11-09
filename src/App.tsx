@@ -6,6 +6,7 @@ import Enrolments from './pages/Enrolments';
 import ClassScheduling from './pages/ClassScheduling';
 import ToastProvider from './components/ToastProvider';
 import TrialScheduling from './pages/TrialScheduling';
+import SalesFollowUp from './pages/SalesFollowUp';
 import Internships from './pages/Internships';
 import { DemoDataProvider } from './hooks/useDemoData';
 
@@ -13,6 +14,7 @@ export type PageKey =
   | 'dashboard'
   | 'freeTrials'
   | 'trialScheduling'
+  | 'salesFollowUp'
   | 'enrolments'
   | 'classScheduling'
   | 'internships';
@@ -28,6 +30,8 @@ function App() {
         return <FreeTrials />;
       case 'trialScheduling':
         return <TrialScheduling />;
+      case 'salesFollowUp':
+        return <SalesFollowUp />;
       case 'enrolments':
         return <Enrolments />;
       case 'classScheduling':

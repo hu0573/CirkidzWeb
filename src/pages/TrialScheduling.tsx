@@ -5,6 +5,7 @@ import StatusBadge from '../components/StatusBadge';
 import { useDemoData } from '../hooks/useDemoData';
 import useToast from '../hooks/useToast';
 import type { TrialBooking } from '../data/trialScheduling';
+import type { TrialOutcome } from '../data/salesFollowUps';
 
 type RescheduleForm = {
   scheduledAt: string;
@@ -15,7 +16,7 @@ type RescheduleForm = {
 
 function TrialScheduling() {
   const { addToast } = useToast();
-  const { trialBookings, setTrialBookings } = useDemoData();
+  const { trialBookings, setTrialBookings, setSalesFollowUps, setFreeTrialLeads } = useDemoData();
   const [week, setWeek] = useState('All');
   const [coach, setCoach] = useState('All');
   const [location, setLocation] = useState('All');
@@ -91,11 +92,90 @@ function TrialScheduling() {
     );
   };
 
+  const ensureFollowUp = (booking: TrialBooking, outcome: TrialOutcome) => {
+    let created = false;
+    const followUpId = `sf-${Date.now()}`;
+    setSalesFollowUps((prev) => {
+      const existing = prev.find(
+        (item) => item.bookingId === booking.id || (booking.leadId && item.leadId === booking.leadId)
+      );
+      if (existing) {
+        return prev.map((item) =>
+          item.id === existing.id
+            ? {
+                ...item,
+                trialOutcome: outcome,
+                followUpStatus:
+                  existing.followUpStatus === 'Won' || existing.followUpStatus === 'Lost'
+                    ? existing.followUpStatus
+                    : existing.followUpStatus === 'Needs Manager'
+                    ? existing.followUpStatus
+                    : 'Pending Call',
+                notes: booking.notes,
+              }
+            : item
+        );
+      }
+      created = true;
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + 1);
+      return [
+        {
+          id: followUpId,
+          leadId: booking.leadId,
+          bookingId: booking.id,
+          student: booking.student,
+          contact: booking.contact,
+          owner: booking.owner,
+          preferredClass: booking.preferredClass,
+          trialOutcome: outcome,
+          followUpStatus: 'Pending Call',
+          lastContactedAt: null,
+          nextAction: 'Call to confirm enrolment decision.',
+          nextActionDue: dueDate.toISOString().slice(0, 10),
+          notes: booking.notes,
+          createdAt: new Date().toISOString().slice(0, 10),
+        },
+        ...prev,
+      ];
+    });
+    if (created && booking.leadId) {
+      setFreeTrialLeads((prev) =>
+        prev.map((lead) =>
+          lead.id === booking.leadId ? { ...lead, status: 'In Follow-up' } : lead
+        )
+      );
+    }
+    return created;
+  };
+
   const handleStatusChange = (booking: TrialBooking, status: TrialBooking['status']) => {
     updateBooking(booking.id, (prev) => ({
       ...prev,
       status,
     }));
+
+    if (status === 'Completed') {
+      const created = ensureFollowUp(booking, 'Attended');
+      addToast({
+        type: 'success',
+        message: `${booking.student} marked as completed. ${
+          created ? 'Follow-up task created.' : 'Existing follow-up refreshed.'
+        }`,
+      });
+      return;
+    }
+
+    if (status === 'No-show') {
+      const created = ensureFollowUp(booking, 'No-show');
+      addToast({
+        type: 'success',
+        message: `${booking.student} flagged as no-show. ${
+          created ? 'Follow-up task created.' : 'Follow-up updated.'
+        }`,
+      });
+      return;
+    }
 
     addToast({
       type: 'success',

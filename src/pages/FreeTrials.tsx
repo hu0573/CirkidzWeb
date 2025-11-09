@@ -11,6 +11,7 @@ const statusOptions: FreeTrialLead['status'][] = [
   'New',
   'Contacted',
   'Trial Scheduled',
+  'In Follow-up',
   'Converted',
   'Lost',
 ];
@@ -57,7 +58,13 @@ const getInitialScheduleForm = (lead?: FreeTrialLead): ScheduleForm => ({
 
 function FreeTrials() {
   const { addToast } = useToast();
-  const { freeTrialLeads, setFreeTrialLeads, setTrialBookings } = useDemoData();
+  const {
+    freeTrialLeads,
+    setFreeTrialLeads,
+    setTrialBookings,
+    setSalesFollowUps,
+    setEnrolments,
+  } = useDemoData();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [selectedLead, setSelectedLead] = useState<FreeTrialLead | null>(null);
@@ -154,6 +161,33 @@ function FreeTrials() {
         item.id === lead.id ? { ...item, status: 'Converted' } : item
       )
     );
+
+    setTrialBookings((prev) =>
+      prev.map((booking) =>
+        booking.leadId === lead.id ? { ...booking, status: 'Converted' } : booking
+      )
+    );
+
+    setSalesFollowUps((prev) => prev.filter((item) => item.leadId !== lead.id));
+
+    setEnrolments((prev) => {
+      if (prev.some((record) => record.student === lead.student)) {
+        return prev;
+      }
+      return [
+        {
+          id: `en-${Date.now()}`,
+          student: lead.student,
+          program: lead.preferredClass,
+          enrolmentDate: new Date().toISOString().slice(0, 10),
+          status: 'Pending Payment',
+          nextPayment: 'To be scheduled',
+          notes: `Converted directly from Free Trials. Owner: ${lead.owner}`,
+        },
+        ...prev,
+      ];
+    });
+
     addToast({ type: 'success', message: `${lead.student} marked as converted.` });
   };
 

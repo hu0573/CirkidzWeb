@@ -15,6 +15,11 @@ const NAV_ITEMS: { key: PageKey; label: string; description: string }[] = [
     label: 'Trial Scheduling',
     description: 'Bookings & follow-up',
   },
+  {
+    key: 'salesFollowUp',
+    label: 'Sales Follow-up',
+    description: 'Post-trial calls',
+  },
   { key: 'enrolments', label: 'Enrolments', description: 'Active students' },
   {
     key: 'classScheduling',

@@ -3,7 +3,7 @@ export type FreeTrialLead = {
   student: string;
   contact: string;
   preferredClass: string;
-  status: 'New' | 'Contacted' | 'Trial Scheduled' | 'Converted' | 'Lost';
+  status: 'New' | 'Contacted' | 'Trial Scheduled' | 'In Follow-up' | 'Converted' | 'Lost';
   owner: string;
   createdAt: string;
   notes: string;
@@ -15,7 +15,7 @@ export const freeTrialLeads: FreeTrialLead[] = [
     student: 'Mia Jenkins',
     contact: 'Parent: Laura · 0401 222 345',
     preferredClass: 'Youth Circus Foundation',
-    status: 'Trial Scheduled',
+    status: 'In Follow-up',
     owner: 'Evelyn Walker',
     createdAt: '2025-11-05',
     notes: 'Loves aerial silks; keen to join term program.',
@@ -35,7 +35,7 @@ export const freeTrialLeads: FreeTrialLead[] = [
     student: 'Lena Wu',
     contact: 'Parent: Erin · 0402 555 102',
     preferredClass: 'Teens Aerial Level 2',
-    status: 'Contacted',
+    status: 'Trial Scheduled',
     owner: 'Oliver Grant',
     createdAt: '2025-11-06',
     notes: 'Needs to confirm with school schedule.',

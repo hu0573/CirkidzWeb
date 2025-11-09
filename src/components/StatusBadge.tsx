@@ -11,6 +11,7 @@ const statusStyles: Record<string, string> = {
   Completed: 'bg-slate-200 text-slate-700',
   Converted: 'bg-emerald-100 text-emerald-700',
   Lost: 'bg-rose-100 text-rose-700',
+  'In Follow-up': 'bg-amber-100 text-amber-700',
   'Pending Payment': 'bg-amber-100 text-amber-700',
   Active: 'bg-emerald-100 text-emerald-700',
   Paused: 'bg-slate-200 text-slate-700',
@@ -18,6 +19,10 @@ const statusStyles: Record<string, string> = {
   Overdue: 'bg-amber-100 text-amber-700',
   'No-show': 'bg-rose-100 text-rose-700',
   Onboarding: 'bg-sky-100 text-sky-700',
+  'Pending Call': 'bg-amber-100 text-amber-700',
+  Attempted: 'bg-sky-100 text-sky-700',
+  'Needs Manager': 'bg-rose-100 text-rose-700',
+  Won: 'bg-emerald-100 text-emerald-700',
 };
 
 function StatusBadge({ status }: StatusBadgeProps) {

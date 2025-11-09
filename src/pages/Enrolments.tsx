@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import EntityDrawer from '../components/EntityDrawer';
 import StatusBadge from '../components/StatusBadge';
-import { enrolments as seedEnrolments, type Enrolment } from '../data/enrolments';
+import { type Enrolment } from '../data/enrolments';
+import { useDemoData } from '../hooks/useDemoData';
 import useToast from '../hooks/useToast';
 
 const statusFilters: (Enrolment['status'] | 'All')[] = [
@@ -25,7 +26,7 @@ const initialForm: EnrolmentForm = {
 
 function Enrolments() {
   const { addToast } = useToast();
-  const [records, setRecords] = useState<Enrolment[]>(seedEnrolments);
+  const { enrolments, setEnrolments } = useDemoData();
   const [statusFilter, setStatusFilter] = useState<(typeof statusFilters)[number]>('All');
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<Enrolment | null>(null);
@@ -33,12 +34,12 @@ function Enrolments() {
   const [form, setForm] = useState(initialForm);
 
   const filtered = useMemo(() => {
-    return records.filter((record) => {
+    return enrolments.filter((record) => {
       const matchesStatus = statusFilter === 'All' ? true : record.status === statusFilter;
       const haystack = `${record.student}${record.program}`.toLowerCase();
       return matchesStatus && haystack.includes(search.toLowerCase());
     });
-  }, [records, search, statusFilter]);
+  }, [enrolments, search, statusFilter]);
 
   const handleAdd = () => {
     if (!form.student || !form.program) {
@@ -49,14 +50,14 @@ function Enrolments() {
       ...form,
       id: `en-${Date.now()}`,
     };
-    setRecords((prev) => [newRecord, ...prev]);
+    setEnrolments((prev) => [newRecord, ...prev]);
     setForm(initialForm);
     setIsModalOpen(false);
     addToast({ type: 'success', message: 'Enrolment added.' });
   };
 
   const handleStatusToggle = (record: Enrolment) => {
-    setRecords((prev) =>
+    setEnrolments((prev) =>
       prev.map((item) => {
         if (item.id !== record.id) return item;
         if (record.status === 'Pending Payment') {
